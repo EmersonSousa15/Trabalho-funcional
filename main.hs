@@ -15,12 +15,18 @@ adicionaVerificador s = s ++ verificador
 
 
 formatVerificationCode :: Int -> String
+formatVerificationCode v =
+    let vChar = intToString v
+    in vChar ++ replicate (4 - length vChar) '0'
+{-
+formatVerificationCode :: Int -> String
 formatVerificationCode v
-    | length vChar < 4 = replicate (4 - length vChar) '0' ++ vChar  
+    | length vChar < 4 = replicate (4 - length vChar) '0' ++ vChar
     | length vChar > 4 = take 4 vChar
     | otherwise = vChar
-    where 
+    where
         vChar = intToString v
+-}
 
 
 
@@ -33,7 +39,8 @@ verificationCode v =
 
 
 stringToInt :: String -> [Int]
-stringToInt s = map getDigito s
+--stringToInt = map getDigito pode ficar assim
+stringToInt i = map getDigito i
 
 getDigito :: Char -> Int
 getDigito c
@@ -41,5 +48,13 @@ getDigito c
     | otherwise = error "Digite apenas numeros!"
 
 intToString :: Int -> [Char]
+--intToString = show pode ficar assim
 intToString n = show n
     
+
+validaCartao :: [Char] -> Bool
+validaCartao s
+    | length s /= 16 = False  -- Deve ter exatamente 16 dígitos
+    | otherwise = let (codigo, verificador) = splitAt 12 s
+                      esperado = formatVerificationCode . verificationCode $ map (\c -> read [c]) codigo
+                  in verificador == esperado

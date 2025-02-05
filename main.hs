@@ -1,4 +1,5 @@
-import Data.Char (isDigit)
+import Data.Char (isDigit, isUpper)
+
 
 main :: IO ()
 main = do
@@ -58,3 +59,11 @@ validaCartao s
     | otherwise = let (codigo, verificador) = splitAt 12 s
                       esperado = formatVerificationCode . verificationCode $ map (\c -> read [c]) codigo
                   in verificador == esperado
+
+
+validaSenha :: String -> Bool
+validaSenha senha =
+    let tamanhoValido = (6 <= length senha) && (length senha <= 10)
+        temMaiuscula = not . null $ [c | c <- senha, isUpper c]
+        temDigito = not . null $ [c | c <- senha, isDigit c]
+    in tamanhoValido && temMaiuscula && temDigito

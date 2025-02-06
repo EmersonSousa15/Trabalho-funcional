@@ -67,3 +67,7 @@ validaSenha senha =
         temMaiuscula = not . null $ [c | c <- senha, isUpper c]
         temDigito = not . null $ [c | c <- senha, isDigit c]
     in tamanhoValido && temMaiuscula && temDigito
+
+--Parte Dagoberto
+recebeStrings :: [String] -> [String]
+recebeStrings lista = filter validaSenha lista

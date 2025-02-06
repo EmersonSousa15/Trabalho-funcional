@@ -1,73 +1,65 @@
 import Data.Char (isDigit, isUpper)
 
-
 main :: IO ()
 main = do
-    putStrLn("Digite o codigo significativo:")
+    putStrLn "Digite o código significativo (12 dígitos):"
     s <- getLine
-    let s' = adicionaVerificador s
-    putStrLn $ "Cartao de credito: " ++ s'
+    if length s /= 12 || not (all isDigit s)
+      then putStrLn "Erro: o código deve conter exatamente 12 dígitos numéricos."
+      else do
+          let s' = adicionaVerificador s
+          putStrLn $ "Cartão de crédito: " ++ s'
 
-
+-- Adiciona os 4 dígitos verificadores ao final do código
 adicionaVerificador :: String -> String
 adicionaVerificador s = s ++ verificador
-    where 
-        verificador = formatVerificationCode ( verificationCode (stringToInt s) )
+  where 
+    verificador = formatVerificationCode (verificationCode (stringToInt s))
 
-
+-- Formata o código verificador conforme os critérios:
+-- se tiver menos de 4 dígitos, acrescenta zeros à direita; se tiver mais, pega os 4 primeiros.
 formatVerificationCode :: Int -> String
 formatVerificationCode v =
-    let vChar = intToString v
-    in vChar ++ replicate (4 - length vChar) '0'
-{-
-formatVerificationCode :: Int -> String
-formatVerificationCode v
-    | length vChar < 4 = replicate (4 - length vChar) '0' ++ vChar
-    | length vChar > 4 = take 4 vChar
-    | otherwise = vChar
-    where
-        vChar = intToString v
--}
+    let s = show v
+    in if length s < 4 
+          then s ++ replicate (4 - length s) '0'
+          else take 4 s
 
-
-
+-- Calcula o código verificador a partir de uma lista de 12 dígitos inteiros.
+-- Divide a lista em duas partes de 6 dígitos e calcula a diferença absoluta entre os produtos (desconsiderando zeros).
 verificationCode :: [Int] -> Int
-verificationCode v = 
-    abs (product (filter (/=0) (fst tuplaIdendtificador)) - product (filter (/=0) (snd tuplaIdendtificador)))
-    where
-        tuplaIdendtificador = splitAt 6 (if length v == 12 then v else error "O codigo deve ter 12 digitos!") 
-
-
+verificationCode digits
+    | length digits /= 12 = error "O código deve ter 12 dígitos!"
+    | otherwise = abs (prodFirst - prodSecond)
+  where
+    (firstHalf, secondHalf) = splitAt 6 digits
+    prodFirst  = product (filter (/= 0) firstHalf)
+    prodSecond = product (filter (/= 0) secondHalf)
 
 stringToInt :: String -> [Int]
---stringToInt = map getDigito pode ficar assim
-stringToInt i = map getDigito i
+stringToInt = map getDigito
 
 getDigito :: Char -> Int
 getDigito c
-    | isDigit c = read [c] 
-    | otherwise = error "Digite apenas numeros!"
-
-intToString :: Int -> [Char]
---intToString = show pode ficar assim
-intToString n = show n
+    | isDigit c = read [c]
+    | otherwise = error "Digite apenas números!"
     
 
-validaCartao :: [Char] -> Bool
+validaCartao :: String -> Bool
 validaCartao s
-    | length s /= 16 = False  -- Deve ter exatamente 16 dígitos
-    | otherwise = let (codigo, verificador) = splitAt 12 s
-                      esperado = formatVerificationCode . verificationCode $ map (\c -> read [c]) codigo
-                  in verificador == esperado
+    | length s /= 16 || not (all isDigit s) = False
+    | otherwise =
+        let (codigo, verificador) = splitAt 12 s
+            esperado = formatVerificationCode (verificationCode (stringToInt codigo))
+        in verificador == esperado
 
 
 validaSenha :: String -> Bool
-validaSenha senha =
-    let tamanhoValido = (6 <= length senha) && (length senha <= 10)
-        temMaiuscula = not . null $ [c | c <- senha, isUpper c]
-        temDigito = not . null $ [c | c <- senha, isDigit c]
-    in tamanhoValido && temMaiuscula && temDigito
+validaSenha senha = lengthValid senha && hasUpper senha && hasDigit senha
+  where
+    lengthValid s = length s >= 6 && length s <= 10
+    hasUpper s    = any isUpper s
+    hasDigit s    = any isDigit s
 
---Parte Dagoberto
-recebeStrings :: [String] -> [String]
-recebeStrings lista = filter validaSenha lista
+FiltraSenhas :: [String] -> [String]
+FiltraSenhas lista = filter validaSenha
